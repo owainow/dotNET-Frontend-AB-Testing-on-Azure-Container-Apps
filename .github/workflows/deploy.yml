@@ -35,13 +35,13 @@ jobs:
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install -y libicu-dev
 
-    - name: List files in the workspace
-      run: ls -R /github/workspace
+    - name: List files in the repository
+      run: ls -R
 
     - name: Creating resources
       run: |
         echo "Creating resources"
-        az deployment group create --resource-group ${{ env.RESOURCE_GROUP_NAME }} --template-file '/github/workspace/Azure/main.bicep' --debug
+        az deployment group create --resource-group ${{ env.RESOURCE_GROUP_NAME }} --template-file 'Azure/main.bicep' --debug
 
   build:
     runs-on: ubuntu-latest
