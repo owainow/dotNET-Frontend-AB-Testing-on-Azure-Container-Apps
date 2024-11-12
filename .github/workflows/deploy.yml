@@ -38,9 +38,11 @@ jobs:
     - name: Creating resources
       uses: azure/CLI@v1
       with:
-        inlineScript: >
+        inlineScript: |
           echo "Creating resources"
           az deployment group create --resource-group ${{ env.RESOURCE_GROUP_NAME }} --template-file '/github/workspace/Azure/main.bicep' --debug
+          echo "Deployment output:"
+          az deployment group show --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name <deployment-name> --query properties.outputs
 
   build:
     runs-on: ubuntu-latest
