@@ -32,17 +32,13 @@ jobs:
           echo "Executing 'az group create -l ${{ env.REGION }} -n ${{ env.RESOURCE_GROUP_NAME }}'"
           az group create -l ${{ env.REGION }} -n ${{ env.RESOURCE_GROUP_NAME }}
 
-    - name: Install libicu
+    - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install -y libicu-dev
 
     - name: Creating resources
-      uses: azure/CLI@v1
-      with:
-        inlineScript: |
-          echo "Creating resources"
-          az deployment group create --resource-group ${{ env.RESOURCE_GROUP_NAME }} --template-file '/github/workspace/Azure/main.bicep' --debug
-          echo "Deployment output:"
-          az deployment group show --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name <deployment-name> --query properties.outputs
+      run: |
+        echo "Creating resources"
+        az deployment group create --resource-group ${{ env.RESOURCE_GROUP_NAME }} --template-file '/github/workspace/Azure/main.bicep' --debug
 
   build:
     runs-on: ubuntu-latest
@@ -88,11 +84,9 @@ jobs:
         creds: ${{ secrets.AzureSPN }}
 
     - name: Installing Container Apps extension
-      uses: azure/CLI@v1
-      with:
-        inlineScript: >
-          az config set extension.use_dynamic_install=yes_without_prompt
-          az extension add --name containerapp --yes
+      run: |
+        az config set extension.use_dynamic_install=yes_without_prompt
+        az extension add --name containerapp --yes
 
     - name: Login to ACR
       run: |
@@ -102,12 +96,9 @@ jobs:
         docker login -u 00000000-0000-0000-0000-000000000000 --password-stdin ${{ env.RESOURCE_GROUP_NAME }}acr.azurecr.io <<< "$refresh_token"
 
     - name: Deploy Container Apps
-      uses: azure/CLI@v1
-      with:
-        inlineScript: >
-          az containerapp registry set -n frontend -g ${{ env.RESOURCE_GROUP_NAME }} --server ${{ env.RESOURCE_GROUP_NAME }}acr.azurecr.io
-          az containerapp update -n frontend -g ${{ env.RESOURCE_GROUP_NAME }} -i ${{ env.RESOURCE_GROUP_NAME }}acr.azurecr.io/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+      run: |
+        az containerapp registry set -n frontend -g ${{ env.RESOURCE_GROUP_NAME }} --server ${{ env.RESOURCE_GROUP_NAME }}acr.azurecr.io
+        az containerapp update -n frontend -g ${{ env.RESOURCE_GROUP_NAME }} -i ${{ env.RESOURCE_GROUP_NAME }}acr.azurecr.io/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
 
     - name: logout
-      run: >
-        az logout
+      run: az logout
