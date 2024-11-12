@@ -6,13 +6,8 @@ on:
     - deploy
 
 env:
-  
-  # alphanumeric string under 14 characters
   RESOURCE_GROUP_NAME: featureflagsaca
-
-  # specify your preferred region
   REGION: eastus
-
   FRONTEND_DOCKER: FeatureFlagsWithContainerApps/Dockerfile
   FRONTEND_IMAGE: frontend
 
@@ -21,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
     - name: Checkout to the branch
       uses: actions/checkout@v2
 
@@ -36,15 +30,16 @@ jobs:
         inlineScript: >
           echo "Creating resource group in Azure"
           echo "Executing 'az group create -l ${{ env.REGION }} -n ${{ env.RESOURCE_GROUP_NAME }}'"
-
           az group create -l ${{ env.REGION }} -n ${{ env.RESOURCE_GROUP_NAME }}
+
+    - name: Install libicu
+      run: sudo apt-get update && sudo apt-get install -y libicu-dev
 
     - name: Creating resources
       uses: azure/CLI@v1
       with:
         inlineScript: >
           echo "Creating resources"
-
           az deployment group create --resource-group ${{ env.RESOURCE_GROUP_NAME }} --template-file '/github/workspace/Azure/main.bicep' --debug
 
   build:
@@ -52,7 +47,6 @@ jobs:
     needs: provision
     
     steps:
-
     - name: Checkout to the branch
       uses: actions/checkout@v2
 
@@ -83,7 +77,6 @@ jobs:
     needs: build
 
     steps:
-
     - name: Checkout to the branch
       uses: actions/checkout@v2
 
@@ -97,7 +90,6 @@ jobs:
       with:
         inlineScript: >
           az config set extension.use_dynamic_install=yes_without_prompt
-
           az extension add --name containerapp --yes
 
     - name: Login to ACR
@@ -112,7 +104,6 @@ jobs:
       with:
         inlineScript: >
           az containerapp registry set -n frontend -g ${{ env.RESOURCE_GROUP_NAME }} --server ${{ env.RESOURCE_GROUP_NAME }}acr.azurecr.io
-
           az containerapp update -n frontend -g ${{ env.RESOURCE_GROUP_NAME }} -i ${{ env.RESOURCE_GROUP_NAME }}acr.azurecr.io/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
 
     - name: logout
