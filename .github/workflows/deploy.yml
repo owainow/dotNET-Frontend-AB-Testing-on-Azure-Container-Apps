@@ -35,6 +35,9 @@ jobs:
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install -y libicu-dev
 
+    - name: List files in the workspace
+      run: ls -R /github/workspace
+
     - name: Creating resources
       run: |
         echo "Creating resources"
